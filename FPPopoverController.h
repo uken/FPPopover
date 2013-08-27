@@ -16,7 +16,6 @@
 
 
 @class FPPopoverController;
-
 @protocol FPPopoverControllerDelegate <NSObject>
 
 @optional
@@ -26,12 +25,10 @@
 @end
 
 @interface FPPopoverController : UIViewController
-{
-    UIView *_parentView;
-}
+
 //ARC-enable and disable support
 #if __has_feature(objc_arc)
-    @property(nonatomic,weak) id<FPPopoverControllerDelegate> delegate;
+    @property(nonatomic,assign) id<FPPopoverControllerDelegate> delegate;
 #else
     @property(nonatomic,assign) id<FPPopoverControllerDelegate> delegate;
 #endif
@@ -39,9 +36,12 @@
 /** @brief FPPopoverArrowDirectionAny, FPPopoverArrowDirectionVertical or FPPopoverArrowDirectionHorizontal for automatic arrow direction.
  **/
 
+@property (nonatomic, retain) FPPopoverController *selfRetain;
+
 /** @brief allow reading in order to integrate other open-source **/
 @property(nonatomic,readonly) FPTouchView* touchView;
 @property(nonatomic,readonly) FPPopoverView* contentView;
+@property(nonatomic,readonly) UIView *displayedView;
 
 @property(nonatomic,assign) FPPopoverArrowDirection arrowDirection;
 
@@ -54,6 +54,11 @@
 
 /** @brief Popover border, default is YES **/
 @property(nonatomic, assign) BOOL border;
+@property(nonatomic, assign) BOOL outsideBorder; //default YES
+
+@property(nonatomic, assign) BOOL dismissOnTouchOutside; // default YES
+@property(nonatomic, assign) BOOL dismissOnTouchInside; // default YES
+@property(nonatomic, assign) BOOL clickThroughOutside;
 
 /** @brief Initialize the popover with the content view controller
  **/
@@ -77,8 +82,6 @@ typedef void (^FPPopoverCompletion)();
 /** @brief Hide the shadows to get better performances **/
 -(void)setShadowsHidden:(BOOL)hidden;
 
-/** @brief Refresh popover **/
--(void)setupView;
 
 
 @end

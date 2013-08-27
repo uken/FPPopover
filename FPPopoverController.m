@@ -16,6 +16,7 @@
     FPPopoverView *_contentView;
     UIViewController *_viewController;
     UIWindow *_window;
+    UIView *_parentView;
     UIView *_fromView;
     UIDeviceOrientation _deviceOrientation;
     
@@ -63,7 +64,6 @@
      selector:@selector(deviceOrientationDidChange:) 
      name:@"UIDeviceOrientationDidChangeNotification" 
      object:nil]; 
-
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(willPresentNewPopover:) name:@"FPNewPopoverPresented" object:nil];
@@ -82,6 +82,9 @@
 
 -(void)dealloc
 {
+    if ( _parentView ) // we haven't been dismissed yet!
+        [self dismissPopover];
+    
     [self removeObservers];
     if(_shadowColor) CGColorRelease(_shadowColor);
     
@@ -109,22 +112,27 @@
     self = [super init];
     if(self)
     {
+        self.selfRetain = self;
+        
 		self.delegate = delegate;
         
         self.alpha = 1.0;
         self.arrowDirection = FPPopoverArrowDirectionAny;
         self.view.userInteractionEnabled = YES;
         _border = YES;
+        _outsideBorder = YES;
+        
+        _dismissOnTouchOutside = YES;
         
         _touchView = [[FPTouchView alloc] initWithFrame:self.view.bounds];
         _touchView.backgroundColor = [UIColor clearColor];
         _touchView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         _touchView.clipsToBounds = NO;
-        [self.view addSubview:_touchView];
+        self.view = _touchView;
         
 #if __has_feature(objc_arc)
         //ARC on
-        id bself = self;
+        __weak id bself = self;
 #else
         //ARC off
         __block id bself = self;
@@ -144,7 +152,7 @@
         [_touchView addSubview:_contentView];
         
         [_contentView addContentView:_viewController.view];
-        _viewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+//        _viewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.view.clipsToBounds = NO;
 
@@ -322,6 +330,7 @@
      _window=nil;
      _parentView=nil;
     
+    self.selfRetain = nil;
 }
 
 -(void)dismissPopoverAnimated:(BOOL)animated {
@@ -330,6 +339,8 @@
 
 -(void)dismissPopoverAnimated:(BOOL)animated completion:(FPPopoverCompletion)completionBlock
 {
+    [self.view setUserInteractionEnabled:NO];
+    
     if(animated)
     {
         [UIView animateWithDuration:0.2 animations:^{
@@ -454,7 +465,7 @@
     
     //if the user wants vertical arrow, check if the content will fit vertically 
     if(FPPopoverArrowDirectionIsVertical(self.arrowDirection) || 
-       (self.arrowDirection == FPPopoverArrowDirectionAny && best_h >= best_w))
+       (self.arrowDirection == FPPopoverArrowDirectionAny && best_h - self.contentSize.height >= best_w - self.contentSize.width))
     {
 
         //ok, will be vertical
@@ -596,14 +607,68 @@
     [_contentView setNeedsDisplay];
 }
 
+-(void)setOutsideBorder:(BOOL)outsideBorder
+{
+    _outsideBorder = outsideBorder;
+    _contentView.outsideBorder = outsideBorder;
+    [_contentView setNeedsDisplay];
+}
+
+
+-(void) setDismissOnTouchOutside:(BOOL)dismissOnTouchOutside {
+    _dismissOnTouchOutside = dismissOnTouchOutside;
+    
+    if ( _dismissOnTouchOutside ) {
+#if __has_feature(objc_arc)
+        //ARC on
+        __weak id bself = self;
+#else
+        //ARC off
+        __block id bself = self;
+#endif
+        
+        [_touchView setTouchedOutsideBlock:^{
+            [bself dismissPopoverAnimated:YES];
+        }];
+    } else {
+        [_touchView setTouchedOutsideBlock:nil];
+    }
+}
+
+-(void) setDismissOnTouchInside:(BOOL)dismissOnTouchInside {
+    _dismissOnTouchInside = dismissOnTouchInside;
+    
+    if ( _dismissOnTouchInside ) {
+#if __has_feature(objc_arc)
+        //ARC on
+        __weak id bself = self;
+#else
+        //ARC off
+        __block id bself = self;
+#endif
+    
+        [_touchView setTouchedInsideBlock:^{
+            [bself dismissPopoverAnimated:YES];
+        }];
+    } else {
+        [_touchView setTouchedInsideBlock:nil];
+    }
+}
+
+-(void) setClickThroughOutside:(BOOL)clickThroughOutside {
+    _clickThroughOutside = clickThroughOutside;
+    [_touchView setClickThroughOutside:clickThroughOutside];
+}
+
+-(UIView *) displayedView {
+    return _viewController.view;
+}
+
 #pragma mark Transparency
 -(void)setAlpha:(CGFloat)alpha
 {
     _alpha = alpha;
     self.view.alpha = alpha;
 }
-
-
-
 
 @end

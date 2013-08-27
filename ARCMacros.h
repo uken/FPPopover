@@ -5,7 +5,7 @@
 //  Rapture In Venice releases all rights to this code.  Feel free use and/or copy it openly and freely!
 //
 
-#define FP_DEBUG
+//#define FP_DEBUG
 
 #if !defined(__clang__) || __clang_major__ < 3
     #ifndef __bridge

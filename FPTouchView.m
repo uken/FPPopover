@@ -37,7 +37,7 @@
 -(UIView*)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
     UIView *subview = [super hitTest:point withEvent:event];
-
+    
     if(UIEventTypeTouches == event.type)
     {
         BOOL touchedInside = subview != self;
@@ -57,15 +57,33 @@
         if(touchedInside && _insideBlock)
         {
             _insideBlock();
+            [self setTouchedInsideBlock:nil];
         }
         else if(!touchedInside && _outsideBlock)
         {
             _outsideBlock();
+            [self setTouchedOutsideBlock:nil];
         }
     }
     
     return subview;
 }
 
+-(BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event {
+    if ( self.clickThroughOutside ) {
+        BOOL touchedInside = NO;
+        for ( UIView *s in self.subviews ) {
+            if ( [s pointInside:point withEvent:event] ) {
+                touchedInside = YES;
+                break;
+            }
+        }
+        
+        return touchedInside;
+            
+    } else {
+        return [super pointInside:point withEvent:event];
+    }
+}
 
 @end
