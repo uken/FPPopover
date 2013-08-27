@@ -17,6 +17,8 @@ typedef void (^FPTouchedInsideBlock)();
     __strong FPTouchedInsideBlock  _insideBlock;
 }
 
+@property (nonatomic, assign) BOOL clickThroughOutside;
+
 -(void)setTouchedOutsideBlock:(FPTouchedOutsideBlock)outsideBlock;
 
 -(void)setTouchedInsideBlock:(FPTouchedInsideBlock)insideBlock;
