@@ -335,13 +335,13 @@
     else if(self.tint == FPPopoverWhiteTint)
     {
         colors[0] = colors[1] = colors[2] = 1.0;
-        colors[0] = colors[1] = colors[2] = 1.0;
+        colors[4] = colors[5] = colors[6] = 1.0;
         colors[3] = colors[7] = 1.0;
     }
     else if(self.tint == FPPopoverFlatBlackTint)
     {
         colors[0] = colors[1] = colors[2] = 0.0;
-        colors[0] = colors[1] = colors[2] = 0.0;
+        colors[4] = colors[5] = colors[6] = 0.0;
         colors[3] = colors[7] = 1.0;
     }
     
